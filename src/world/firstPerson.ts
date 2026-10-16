@@ -1,6 +1,7 @@
 import { Camera, Vector3, Euler } from '@iwsdk/core';
 import { WinterAudioSystem } from './effects/audio.js';
 import { TerrainElevation } from './procedural/terrain.js';
+import { CollisionSystem } from './collision/collisionSystem.js';
 
 export interface PlayerMovementState {
   position: Vector3;
@@ -189,17 +190,33 @@ export class FirstPersonController {
       this.bobTime += delta * bobFreq;
       const bobY = Math.sin(this.bobTime) * (isRunning ? 0.05 : 0.025);
 
-      this.playerPos.x += this.velocity.x * delta;
-      this.playerPos.z += this.velocity.z * delta;
+      const desiredX = this.playerPos.x + this.velocity.x * delta;
+      const desiredZ = this.playerPos.z + this.velocity.z * delta;
+
+      // Solid collision resolution (cannot clip through building walls, garages, or obstacles)
+      const resolved = CollisionSystem.resolveMovement(
+        this.playerPos,
+        new Vector3(desiredX, this.groundY, desiredZ),
+        this.groundY
+      );
+
+      this.playerPos.x = resolved.x;
+      this.playerPos.z = resolved.z;
     } else {
       // Dampen velocity when stopped
       this.velocity.x *= 0.8;
       this.velocity.z *= 0.8;
     }
 
-    // Snap ground height smoothly to terrain elevation
-    const targetGroundY = TerrainElevation.getHeight(this.playerPos.x, this.playerPos.z);
-    this.groundY += (targetGroundY - this.groundY) * Math.min(1.0, delta * 12.0);
+    // Snap ground height smoothly to terrain elevation or indoor floor/stairs
+    const outdoorTerrainY = TerrainElevation.getHeight(this.playerPos.x, this.playerPos.z);
+    const targetGroundY = CollisionSystem.getPlayerGroundY(
+      this.playerPos.x,
+      this.playerPos.z,
+      this.groundY,
+      outdoorTerrainY
+    );
+    this.groundY += (targetGroundY - this.groundY) * Math.min(1.0, delta * 14.0);
     this.playerPos.y = this.groundY;
 
     // Camera placement: 3rd-person front selfie inspection (key '5') OR 1st-person above head

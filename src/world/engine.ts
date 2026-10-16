@@ -164,8 +164,8 @@ export class SnowWorldEngine {
       this.controller.getPitch()
     );
 
-    // Expand / generate chunks as player walks
-    this.chunkManager.update(playerPos);
+    // Expand / generate chunks as player walks & update animated doors
+    this.chunkManager.update(playerPos, delta);
 
     // Update swirling blizzard particles around player
     this.blizzardSystem.update(delta, playerPos);
