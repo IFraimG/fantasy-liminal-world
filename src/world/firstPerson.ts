@@ -39,9 +39,9 @@ export class FirstPersonController {
   private direction = new Vector3();
   private keys: Record<string, boolean> = {};
 
-  // Movement orientation & key mappings
-  public keyMapping: 'user_custom' | 'classic' = 'user_custom';
-  public moveOrientation: 'fixed_world' | 'camera' = 'fixed_world';
+  // Movement orientation & key mappings (relative to camera look direction)
+  public keyMapping: 'user_custom' | 'classic' = 'classic';
+  public moveOrientation: 'fixed_world' | 'camera' = 'camera';
 
   // Pre-allocated vectors to avoid per-frame allocations
   private tempCamDir = new Vector3();
@@ -133,20 +133,20 @@ export class FirstPersonController {
     const currentSpeed = this.moveSpeed * (isRunning ? this.runMultiplier : 1.0);
 
     // Read directional inputs
-    let moveZ = 0; // -1 is forward (North), +1 is backward (South)
-    let moveX = 0; // -1 is left (West), +1 is right (East)
+    let moveZ = 0; // -1 is forward, +1 is backward
+    let moveX = 0; // -1 is left, +1 is right
 
-    if (this.keyMapping === 'user_custom') {
-      // User-requested mapping: W - вперед, A - назад, S - влево, D - вправо
-      if (this.keys['KeyW'] || this.keys['ArrowUp']) moveZ -= 1;
-      if (this.keys['KeyA'] || this.keys['ArrowDown']) moveZ += 1;
-      if (this.keys['KeyS'] || this.keys['ArrowLeft']) moveX -= 1;
-      if (this.keys['KeyD'] || this.keys['ArrowRight']) moveX += 1;
-    } else {
-      // Classic WASD: W - вперед, S - назад, A - влево, D - вправо
+    if (this.keyMapping === 'classic') {
+      // Classic gamer WASD: W - вперед, S - назад, A - влево, D - вправо
       if (this.keys['KeyW'] || this.keys['ArrowUp']) moveZ -= 1;
       if (this.keys['KeyS'] || this.keys['ArrowDown']) moveZ += 1;
       if (this.keys['KeyA'] || this.keys['ArrowLeft']) moveX -= 1;
+      if (this.keys['KeyD'] || this.keys['ArrowRight']) moveX += 1;
+    } else {
+      // User custom fallback
+      if (this.keys['KeyW'] || this.keys['ArrowUp']) moveZ -= 1;
+      if (this.keys['KeyA'] || this.keys['ArrowDown']) moveZ += 1;
+      if (this.keys['KeyS'] || this.keys['ArrowLeft']) moveX -= 1;
       if (this.keys['KeyD'] || this.keys['ArrowRight']) moveX += 1;
     }
 
@@ -159,18 +159,19 @@ export class FirstPersonController {
       const normZ = moveZ / inputLen;
 
       if (this.moveOrientation === 'camera') {
-        // Move relative to where camera is facing
-        this.camera.getWorldDirection(this.tempCamDir);
-        this.tempCamDir.y = 0;
-        this.tempCamDir.normalize();
+        // Dynamic horizontal movement based on where the player's camera is currently looking:
+        // Turning camera with mouse while holding 'W' instantly redirects movement trajectory!
+        const yaw = this.euler.y;
+        const fwdX = -Math.sin(yaw);
+        const fwdZ = -Math.cos(yaw);
+        const rightX = Math.cos(yaw);
+        const rightZ = -Math.sin(yaw);
 
-        this.tempCamRight.crossVectors(this.tempCamDir, this.camera.up).normalize();
-
-        // normZ: -1 is forward, +1 is backward
-        // normX: -1 is left, +1 is right
-        this.tempMoveVec.set(0, 0, 0)
-          .addScaledVector(this.tempCamDir, -normZ)
-          .addScaledVector(this.tempCamRight, normX);
+        // normZ: -1 is forward (W), +1 is backward (S)
+        // normX: -1 is left (A), +1 is right (D)
+        this.tempMoveVec.x = (-normZ * fwdX) + (normX * rightX);
+        this.tempMoveVec.z = (-normZ * fwdZ) + (normX * rightZ);
+        this.tempMoveVec.y = 0;
       } else {
         // Fixed world coordinates: each key moves in its specific cardinal direction
         this.tempMoveVec.set(normX, 0, normZ);
