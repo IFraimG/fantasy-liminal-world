@@ -18,15 +18,18 @@ export class FirstPersonController {
   // Movement parameters
   private moveSpeed = 4.5; // m/s walking in snow
   private runMultiplier = 1.75; // running in snow
-  private eyeHeight = 1.76; // on the level of the ibis head/eyes
+  private eyeHeight = 2.12; // elevated above the ibis head for clear first-person view
 
   // World position tracking
-  public playerPos = new Vector3(0, 1.76, 0);
+  public playerPos = new Vector3(0, 2.12, 0);
 
   // Rotation
   private euler = new Euler(0, 0, 0, 'YXZ');
   private mouseSensitivity = 0.0022;
   public isLocked = false;
+
+  // 3rd-person front selfie inspection mode (Key '5')
+  public isThirdPersonFront = false;
 
   // Velocity & dampening
   private velocity = new Vector3();
@@ -73,6 +76,9 @@ export class FirstPersonController {
   private bindEvents(): void {
     window.addEventListener('keydown', (e) => {
       this.keys[e.code] = true;
+      if (e.code === 'Digit5' || e.code === 'Numpad5' || e.key === '5') {
+        this.isThirdPersonFront = true;
+      }
       // Start audio on first keypress
       this.audioSystem.startWind();
       this.audioSystem.startBgm();
@@ -80,6 +86,9 @@ export class FirstPersonController {
 
     window.addEventListener('keyup', (e) => {
       this.keys[e.code] = false;
+      if (e.code === 'Digit5' || e.code === 'Numpad5' || e.key === '5') {
+        this.isThirdPersonFront = false;
+      }
     });
 
     this.domElement.addEventListener('click', () => {
@@ -98,7 +107,6 @@ export class FirstPersonController {
       const movementX = e.movementX || 0;
       const movementY = e.movementY || 0;
 
-      this.euler.setFromQuaternion(this.camera.quaternion);
       this.euler.y -= movementX * this.mouseSensitivity;
       this.euler.x -= movementY * this.mouseSensitivity;
 
@@ -106,7 +114,9 @@ export class FirstPersonController {
       const maxPitch = Math.PI / 2 - 0.08;
       this.euler.x = Math.max(-maxPitch, Math.min(maxPitch, this.euler.x));
 
-      this.camera.quaternion.setFromEuler(this.euler);
+      if (!this.isThirdPersonFront) {
+        this.camera.quaternion.setFromEuler(this.euler);
+      }
     });
   }
 
@@ -178,21 +188,32 @@ export class FirstPersonController {
 
       this.playerPos.x += this.velocity.x * delta;
       this.playerPos.z += this.velocity.z * delta;
+    } else {
+      // Dampen velocity when stopped
+      this.velocity.x *= 0.8;
+      this.velocity.z *= 0.8;
+    }
 
+    // Camera placement: 3rd-person front selfie inspection (key '5') OR 1st-person above head
+    if (this.isThirdPersonFront) {
+      // Position camera 2.9m directly in front of the ibis, looking back at the full body
+      const yaw = this.euler.y;
+      const frontDist = 2.9;
+      const camX = this.playerPos.x - Math.sin(yaw) * frontDist;
+      const camY = 1.15;
+      const camZ = this.playerPos.z - Math.cos(yaw) * frontDist;
+
+      this.camera.position.set(camX, camY, camZ);
+      this.camera.lookAt(this.playerPos.x, 1.15, this.playerPos.z);
+    } else {
+      // Normal 1st-person view directly above the ibis head
+      const bobY = isMoving ? Math.sin(this.bobTime) * (isRunning ? 0.05 : 0.025) : 0;
       this.camera.position.set(
         this.playerPos.x,
         this.eyeHeight + bobY,
         this.playerPos.z
       );
-    } else {
-      // Dampen velocity when stopped
-      this.velocity.x *= 0.8;
-      this.velocity.z *= 0.8;
-      this.camera.position.set(
-        this.playerPos.x,
-        this.eyeHeight,
-        this.playerPos.z
-      );
+      this.camera.quaternion.setFromEuler(this.euler);
     }
 
     // Heading calculation (0 to 360 degrees)
@@ -223,6 +244,10 @@ export class FirstPersonController {
 
   public setMoveOrientation(orientation: 'fixed_world' | 'camera'): void {
     this.moveOrientation = orientation;
+  }
+
+  public setThirdPersonFront(active: boolean): void {
+    this.isThirdPersonFront = active;
   }
 
   public getPitch(): number {

@@ -19,6 +19,7 @@ export const App: React.FC = () => {
   const [bgmVolume, setBgmVolume] = useState(0.65);
   const [keyMapping, setKeyMapping] = useState<'user_custom' | 'classic'>('user_custom');
   const [moveOrientation, setMoveOrientation] = useState<'fixed_world' | 'camera'>('fixed_world');
+  const [isThirdPerson, setIsThirdPerson] = useState(false);
 
   // Loading screen states
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -60,11 +61,26 @@ export const App: React.FC = () => {
     const handleLockChange = () => {
       setIsLocked(document.pointerLockElement === containerRef.current);
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Digit5' || e.code === 'Numpad5' || e.key === '5') {
+        setIsThirdPerson(true);
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Digit5' || e.code === 'Numpad5' || e.key === '5') {
+        setIsThirdPerson(false);
+      }
+    };
+
     document.addEventListener('pointerlockchange', handleLockChange);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
 
     return () => {
       isCancelled = true;
       document.removeEventListener('pointerlockchange', handleLockChange);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
 
@@ -114,6 +130,11 @@ export const App: React.FC = () => {
     engine?.teleport(x, z);
   };
 
+  const handleThirdPersonToggle = (active: boolean) => {
+    setIsThirdPerson(active);
+    engine?.controller.setThirdPersonFront(active);
+  };
+
   return (
     <div style={{
       position: 'relative',
@@ -151,6 +172,8 @@ export const App: React.FC = () => {
           isLocked={isLocked}
           onRequestLock={handleRequestLock}
           blizzardIntensity={blizzardIntensity}
+          isThirdPerson={isThirdPerson}
+          onThirdPersonToggle={handleThirdPersonToggle}
         />
       )}
 

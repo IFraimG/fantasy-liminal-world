@@ -7,13 +7,17 @@ interface HudOverlayProps {
   isLocked: boolean;
   onRequestLock: () => void;
   blizzardIntensity: number;
+  isThirdPerson?: boolean;
+  onThirdPersonToggle?: (active: boolean) => void;
 }
 
 export const HudOverlay: React.FC<HudOverlayProps> = ({
   playerState,
   isLocked,
   onRequestLock,
-  blizzardIntensity
+  blizzardIntensity,
+  isThirdPerson = false,
+  onThirdPersonToggle
 }) => {
   const heading = playerState?.headingDeg ?? 0;
   const distance = playerState?.distanceTraveled ?? 0;
@@ -90,6 +94,31 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
               <Footprints size={13} color="#60a5fa" />
               Пройдено: {distance} м
             </div>
+            {/* Third-Person Inspection Button */}
+            <button
+              onMouseDown={() => onThirdPersonToggle?.(true)}
+              onMouseUp={() => onThirdPersonToggle?.(false)}
+              onTouchStart={() => onThirdPersonToggle?.(true)}
+              onTouchEnd={() => onThirdPersonToggle?.(false)}
+              style={{
+                marginTop: '4px',
+                padding: '4px 8px',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: isThirdPerson ? '#fef08a' : '#fca5a5',
+                backgroundColor: isThirdPerson ? 'rgba(234, 179, 8, 0.25)' : 'rgba(239, 68, 68, 0.15)',
+                border: isThirdPerson ? '1px solid #facc15' : '1px solid rgba(239, 68, 68, 0.35)',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                pointerEvents: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}
+              title="Удерживайте для вида спереди на ибиса"
+            >
+              👁️ <span>Вид спереди <b>[5]</b></span>
+            </button>
           </div>
         </div>
 
@@ -157,9 +186,10 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
               Кликните для обзора от 1-го лица
             </span>
           </div>
-          <div style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: '1.5' }}>
-            Двигайте мышью для свободного обзора. Опустите взгляд вниз, чтобы увидеть свой скин ибиса!<br />
+          <div style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: '1.6' }}>
+            Камера поднята над головой птицы. Двигайте мышью для свободного обзора.<br />
             Клавиши: <b>W (вперед), A (назад), S (влево), D (вправо)</b> или <b>Стрелки</b>.<br />
+            🔘 <b>Зажмите клавишу «5»</b> — посмотреть на себя спереди от 3-го лица целиком!<br />
             Зажмите <b>Shift</b> для бега по снегу.
           </div>
         </div>
@@ -184,16 +214,16 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div style={{
           fontSize: '12px',
-          color: 'rgba(255, 255, 255, 0.8)',
-          backgroundColor: 'rgba(15, 23, 42, 0.75)',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          padding: '8px 14px',
+          color: 'rgba(255, 255, 255, 0.9)',
+          backgroundColor: 'rgba(15, 23, 42, 0.82)',
+          border: '1px solid rgba(239, 68, 68, 0.4)',
+          padding: '8px 16px',
           borderRadius: '8px',
           display: 'flex',
           alignItems: 'center',
           gap: '8px'
         }}>
-          🦩 <span>Вы играете за <b>Красного Ибиса</b>! Опустите взгляд вниз, чтобы увидеть длинный изогнутый клюв, перья и лапки на снегу.</span>
+          🦩 <span>Камера над головой. <b>Удерживайте «5»</b> для вида спереди на ибиса от 3-го лица (отпустите — камера вернется).</span>
         </div>
       </div>
     </div>

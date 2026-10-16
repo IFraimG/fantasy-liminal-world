@@ -180,94 +180,94 @@ export class IbisPlayerModel {
 
     // Lower neck
     const neckLower = new Mesh(
-      new BoxGeometry(0.18, 0.28, 0.18),
+      new BoxGeometry(0.14, 0.24, 0.14),
       matRedPrimary
     );
-    neckLower.position.set(0, 0.12, -0.04);
+    neckLower.position.set(0, 0.10, -0.04);
     neckLower.rotation.x = 0.35; // leans forward from chest
     neckGroup.add(neckLower);
 
     // Mid neck (curving upwards)
     const neckMid = new Mesh(
-      new BoxGeometry(0.16, 0.32, 0.16),
+      new BoxGeometry(0.13, 0.26, 0.13),
       matRedBright
     );
-    neckMid.position.set(0, 0.34, -0.08);
+    neckMid.position.set(0, 0.30, -0.08);
     neckMid.rotation.x = -0.15; // curves back upright
     neckGroup.add(neckMid);
 
     // Upper neck
     const neckUpper = new Mesh(
-      new BoxGeometry(0.15, 0.26, 0.15),
+      new BoxGeometry(0.12, 0.22, 0.12),
       matRedPrimary
     );
-    neckUpper.position.set(0, 0.56, -0.05);
-    neckUpper.rotation.x = -0.32; // curves forward into head
+    neckUpper.position.set(0, 0.50, -0.05);
+    neckUpper.rotation.x = -0.30; // curves forward into head
     neckGroup.add(neckUpper);
 
     this.root.add(neckGroup);
 
     // -------------------------------------------------------------
-    // 4. HEAD & EYES (At camera eye level ~ 1.72)
+    // 4. HEAD & EYES (At y ~ 1.68, under camera at y ~ 2.12)
     // -------------------------------------------------------------
     this.headGroup = new Group();
-    this.headGroup.position.set(0, 1.75, -0.12);
+    this.headGroup.position.set(0, 1.68, -0.22);
 
     const headMesh = new Mesh(
-      new BoxGeometry(0.22, 0.22, 0.28),
+      new BoxGeometry(0.18, 0.18, 0.24),
       matRedPrimary
     );
     headMesh.position.set(0, 0, 0);
     this.headGroup.add(headMesh);
 
     // Left Eye
-    const eyeLeftPupil = new Mesh(new BoxGeometry(0.04, 0.07, 0.07), matEyeBlack);
-    eyeLeftPupil.position.set(-0.115, 0.03, -0.05);
+    const eyeLeftPupil = new Mesh(new BoxGeometry(0.035, 0.06, 0.06), matEyeBlack);
+    eyeLeftPupil.position.set(-0.095, 0.025, -0.04);
     this.headGroup.add(eyeLeftPupil);
 
-    const eyeLeftGlint = new Mesh(new BoxGeometry(0.042, 0.03, 0.03), matEyeWhite);
-    eyeLeftGlint.position.set(-0.116, 0.045, -0.065);
+    const eyeLeftGlint = new Mesh(new BoxGeometry(0.036, 0.025, 0.025), matEyeWhite);
+    eyeLeftGlint.position.set(-0.096, 0.038, -0.055);
     this.headGroup.add(eyeLeftGlint);
 
     // Right Eye
-    const eyeRightPupil = new Mesh(new BoxGeometry(0.04, 0.07, 0.07), matEyeBlack);
-    eyeRightPupil.position.set(0.115, 0.03, -0.05);
+    const eyeRightPupil = new Mesh(new BoxGeometry(0.035, 0.06, 0.06), matEyeBlack);
+    eyeRightPupil.position.set(0.095, 0.025, -0.04);
     this.headGroup.add(eyeRightPupil);
 
-    const eyeRightGlint = new Mesh(new BoxGeometry(0.042, 0.03, 0.03), matEyeWhite);
-    eyeRightGlint.position.set(0.116, 0.045, -0.065);
+    const eyeRightGlint = new Mesh(new BoxGeometry(0.036, 0.025, 0.025), matEyeWhite);
+    eyeRightGlint.position.set(0.096, 0.038, -0.055);
     this.headGroup.add(eyeRightGlint);
 
     // -------------------------------------------------------------
     // 5. LONG CURVED IBIS BEAK (Extending forward & curving down)
     // -------------------------------------------------------------
     this.beakGroup = new Group();
-    this.beakGroup.position.set(0, -0.02, -0.14);
+    this.beakGroup.position.set(0, -0.02, -0.12);
 
-    // Beak segment 1 (base): thick, pointing slightly down
+    // Beak segment 1 (base): pointing slightly down
     const beakSeg1 = new Mesh(
-      new BoxGeometry(0.11, 0.11, 0.22),
+      new BoxGeometry(0.09, 0.09, 0.20),
       matBeak
     );
-    beakSeg1.position.set(0, -0.02, -0.10);
+    beakSeg1.position.set(0, -0.02, -0.09);
     beakSeg1.rotation.x = 0.12;
     this.beakGroup.add(beakSeg1);
 
     // Beak segment 2 (mid): tapering, curving downward
     const beakSeg2 = new Mesh(
-      new BoxGeometry(0.085, 0.085, 0.24),
+      new BoxGeometry(0.07, 0.07, 0.22),
       matBeak
     );
-    beakSeg2.position.set(0, -0.09, -0.28);
+    beakSeg2.position.set(0, -0.08, -0.26);
     beakSeg2.rotation.x = 0.38;
     this.beakGroup.add(beakSeg2);
 
     // Beak segment 3 (tip): slender, curving sharply down
     const beakSeg3 = new Mesh(
-      new BoxGeometry(0.06, 0.06, 0.24),
+      new BoxGeometry(0.05, 0.05, 0.22),
       matBeak
     );
-    beakSeg3.position.set(0, -0.22, -0.44);
+    beakSeg3.position.set(0, -0.20, -0.42);
     beakSeg3.rotation.x = 0.68;
     this.beakGroup.add(beakSeg3);
 
