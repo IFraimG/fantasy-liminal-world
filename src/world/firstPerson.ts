@@ -18,10 +18,10 @@ export class FirstPersonController {
   // Movement parameters
   private moveSpeed = 4.5; // m/s walking in snow
   private runMultiplier = 1.75; // running in snow
-  private eyeHeight = 1.7; // 1.7m eye level above ground
+  private eyeHeight = 1.76; // on the level of the ibis head/eyes
 
   // World position tracking
-  public playerPos = new Vector3(0, 1.7, 0);
+  public playerPos = new Vector3(0, 1.76, 0);
 
   // Rotation
   private euler = new Euler(0, 0, 0, 'YXZ');
@@ -53,6 +53,12 @@ export class FirstPersonController {
     this.camera = camera;
     this.domElement = domElement;
     this.audioSystem = audioSystem;
+
+    // Adjust camera near plane so ibis beak and skin are clearly visible when looking down
+    if ('near' in camera) {
+      (camera as unknown as { near: number; updateProjectionMatrix: () => void }).near = 0.05;
+      (camera as unknown as { near: number; updateProjectionMatrix: () => void }).updateProjectionMatrix();
+    }
 
     this.playerPos.set(0, this.eyeHeight, 0);
     this.camera.position.copy(this.playerPos);
@@ -218,5 +224,14 @@ export class FirstPersonController {
   public setMoveOrientation(orientation: 'fixed_world' | 'camera'): void {
     this.moveOrientation = orientation;
   }
+
+  public getPitch(): number {
+    return this.euler.x;
+  }
+
+  public getYaw(): number {
+    return this.euler.y;
+  }
 }
+
 

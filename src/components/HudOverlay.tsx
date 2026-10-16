@@ -47,26 +47,49 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
     }}>
       {/* Top Bar: Compass & Coordinates */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        {/* Left: Atmospheric Location HUD */}
+        {/* Left: Atmospheric Location HUD with Ibis Avatar */}
         <div style={{
           backgroundColor: 'rgba(15, 23, 42, 0.75)',
           backdropFilter: 'blur(8px)',
-          padding: '12px 18px',
-          borderRadius: '10px',
+          padding: '10px 16px',
+          borderRadius: '12px',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           display: 'flex',
-          flexDirection: 'column',
-          gap: '6px'
+          gap: '12px',
+          alignItems: 'center'
         }}>
-          <div style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1.5px', color: '#94a3b8' }}>
-            Спальный район • Зима
+          {/* Ibis Avatar Thumbnail */}
+          <div style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            border: '2px solid #ef4444',
+            boxShadow: '0 0 10px rgba(239, 68, 68, 0.4)',
+            backgroundColor: '#1e293b',
+            flexShrink: 0
+          }}>
+            <img
+              src="./textures/ibis.png"
+              alt="Ибис"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+            />
           </div>
-          <div style={{ fontSize: '18px', fontWeight: 600, color: '#f8fafc' }}>
-            {posX}м, {posZ}м
-          </div>
-          <div style={{ fontSize: '12px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Footprints size={14} color="#60a5fa" />
-            Пройдено: {distance} м
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+            <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: '#f87171', fontWeight: 600 }}>
+              Красный Ибис • Двор
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: '#f8fafc' }}>
+              {posX}м, {posZ}м
+            </div>
+            <div style={{ fontSize: '11px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Footprints size={13} color="#60a5fa" />
+              Пройдено: {distance} м
+            </div>
           </div>
         </div>
 
@@ -135,7 +158,7 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
             </span>
           </div>
           <div style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: '1.5' }}>
-            Двигайте мышью для свободного взгляда во все стороны.<br />
+            Двигайте мышью для свободного обзора. Опустите взгляд вниз, чтобы увидеть свой скин ибиса!<br />
             Клавиши: <b>W (вперед), A (назад), S (влево), D (вправо)</b> или <b>Стрелки</b>.<br />
             Зажмите <b>Shift</b> для бега по снегу.
           </div>
@@ -161,12 +184,16 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div style={{
           fontSize: '12px',
-          color: 'rgba(255, 255, 255, 0.6)',
-          backgroundColor: 'rgba(0, 0, 0, 0.4)',
-          padding: '6px 12px',
-          borderRadius: '6px'
+          color: 'rgba(255, 255, 255, 0.8)',
+          backgroundColor: 'rgba(15, 23, 42, 0.75)',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          padding: '8px 14px',
+          borderRadius: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
         }}>
-          💡 По мере движения вперед процедурно расширяются новые дворы и панельки
+          🦩 <span>Вы играете за <b>Красного Ибиса</b>! Опустите взгляд вниз, чтобы увидеть длинный изогнутый клюв, перья и лапки на снегу.</span>
         </div>
       </div>
     </div>

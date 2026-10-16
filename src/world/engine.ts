@@ -13,6 +13,7 @@ import { BlizzardSystem } from './effects/blizzard.js';
 import { WinterAudioSystem } from './effects/audio.js';
 import { FirstPersonController, PlayerMovementState } from './firstPerson.js';
 import { ProceduralTextures } from './textures.js';
+import { IbisPlayerModel } from './player/ibisModel.js';
 
 export interface WorldMetrics {
   playerPosition: { x: number; y: number; z: number };
@@ -32,6 +33,7 @@ export class SnowWorldEngine {
   public blizzardSystem!: BlizzardSystem;
   public audioSystem!: WinterAudioSystem;
   public controller!: FirstPersonController;
+  public ibisModel!: IbisPlayerModel;
 
   private isRunning = false;
   private lastTime = performance.now();
@@ -39,6 +41,7 @@ export class SnowWorldEngine {
   private lastFpsTime = performance.now();
   private currentFps = 60;
 
+  private lastMovementState?: PlayerMovementState;
   private stateListeners: ((state: PlayerMovementState) => void)[] = [];
   private metricsListeners: ((metrics: WorldMetrics) => void)[] = [];
 
@@ -103,8 +106,14 @@ export class SnowWorldEngine {
     onProgress?.(92, 'Компиляция WebGL шейдеров и кэширование...');
     this.controller = new FirstPersonController(camera, container, this.audioSystem);
     this.controller.setOnStateChange((state) => {
+      this.lastMovementState = state;
       this.stateListeners.forEach((cb) => cb(state));
     });
+
+    // Create 3D Voxel Ibis Player Avatar
+    this.ibisModel = new IbisPlayerModel();
+    scene.add(this.ibisModel.root);
+    this.ibisModel.setPosition(camera.position.x, 0, camera.position.z);
 
     // Compile all shaders in advance so first render has 0 lag!
     if (this.world.renderer && this.world.renderer.compile) {
@@ -144,6 +153,16 @@ export class SnowWorldEngine {
     this.controller.update(delta);
 
     const playerPos = this.controller.playerPos;
+
+    // Synchronize Ibis player model
+    this.ibisModel.setPosition(playerPos.x, 0, playerPos.z);
+    this.ibisModel.setRotationY(this.controller.getYaw());
+    this.ibisModel.update(
+      delta,
+      this.lastMovementState?.isMoving ?? false,
+      this.lastMovementState?.isRunning ?? false,
+      this.controller.getPitch()
+    );
 
     // Expand / generate chunks as player walks
     this.chunkManager.update(playerPos);
@@ -221,6 +240,7 @@ export class SnowWorldEngine {
 
   public teleport(x: number, z: number): void {
     this.controller.teleport(x, z);
+    this.ibisModel.setPosition(x, 0, z);
     this.chunkManager.update(this.controller.playerPos);
   }
 }

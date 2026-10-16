@@ -56,10 +56,48 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
         fontSize: '13px',
         color: '#64748b',
         letterSpacing: '1px',
-        marginBottom: '36px',
+        marginBottom: '20px',
         textTransform: 'uppercase'
       }}>
         3D Reality • IWSDK Engine • Procedural World
+      </div>
+
+      {/* Character Role Card */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '14px',
+        backgroundColor: 'rgba(30, 41, 59, 0.75)',
+        border: '1px solid rgba(239, 68, 68, 0.35)',
+        borderRadius: '14px',
+        padding: '10px 18px',
+        marginBottom: '28px',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+        maxWidth: '380px'
+      }}>
+        <div style={{
+          width: '52px',
+          height: '52px',
+          borderRadius: '50%',
+          overflow: 'hidden',
+          border: '2px solid #ef4444',
+          boxShadow: '0 0 14px rgba(239, 68, 68, 0.5)',
+          flexShrink: 0
+        }}>
+          <img
+            src="./textures/ibis.png"
+            alt="Красный ибис"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        </div>
+        <div>
+          <div style={{ fontSize: '13px', fontWeight: 700, color: '#f87171', letterSpacing: '0.5px' }}>
+            Роль: Красный Ибис (Scarlet Ibis)
+          </div>
+          <div style={{ fontSize: '11px', color: '#cbd5e1', marginTop: '3px', lineHeight: '1.4' }}>
+            Камера от 1-го лица на уровне головы. Опустите взгляд вниз, чтобы увидеть свой скин!
+          </div>
+        </div>
       </div>
 
       {/* Progress Box */}
