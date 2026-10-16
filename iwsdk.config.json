@@ -1,0 +1,45 @@
+{
+  "$schema": "./node_modules/@iwsdk/core/dist/schemas/iwsdk-project.v1.schema.json",
+  "version": "iwsdk.project.v1",
+  "scene": "./public/scenes/main.iwsdk.scene.json",
+  "assets": {
+    "module": "./src/assets"
+  },
+  "components": {
+    "module": "./src/components"
+  },
+  "world": {
+    "xr": false,
+    "input": {
+      "canvasPointerEvents": true
+    },
+    "render": {
+      "near": 0.1,
+      "far": 400,
+      "camera": {
+        "position": [
+          0,
+          1.7,
+          0
+        ],
+        "lookAt": [
+          0,
+          1.7,
+          -10
+        ]
+      }
+    },
+    "features": {
+      "locomotion": false,
+      "grabbing": false,
+      "physics": false,
+      "sceneUnderstanding": false,
+      "environmentRaycast": false
+    }
+  },
+  "dev": {
+    "emulator": {
+      "device": "metaQuest3"
+    }
+  }
+}
