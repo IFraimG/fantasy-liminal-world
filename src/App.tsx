@@ -16,6 +16,9 @@ export const App: React.FC = () => {
   const [blizzardIntensity, setBlizzardIntensity] = useState(1.0);
   const [fogDensity, setFogDensity] = useState(0.010);
   const [volume, setVolume] = useState(0.6);
+  const [bgmVolume, setBgmVolume] = useState(0.65);
+  const [keyMapping, setKeyMapping] = useState<'user_custom' | 'classic'>('user_custom');
+  const [moveOrientation, setMoveOrientation] = useState<'fixed_world' | 'camera'>('fixed_world');
 
   // Loading screen states
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -67,6 +70,7 @@ export const App: React.FC = () => {
 
   const handleEnterWorld = () => {
     setShowLoading(false);
+    engine?.startAudio();
     setTimeout(() => {
       engine?.controller.requestLock();
     }, 200);
@@ -89,6 +93,21 @@ export const App: React.FC = () => {
   const handleVolumeChange = (val: number) => {
     setVolume(val);
     engine?.setVolume(val);
+  };
+
+  const handleBgmVolumeChange = (val: number) => {
+    setBgmVolume(val);
+    engine?.setBgmVolume(val);
+  };
+
+  const handleKeyMappingChange = (val: 'user_custom' | 'classic') => {
+    setKeyMapping(val);
+    engine?.setKeyMapping(val);
+  };
+
+  const handleMoveOrientationChange = (val: 'fixed_world' | 'camera') => {
+    setMoveOrientation(val);
+    engine?.setMoveOrientation(val);
   };
 
   const handleTeleport = (x: number, z: number) => {
@@ -144,6 +163,12 @@ export const App: React.FC = () => {
           onFogChange={handleFogChange}
           volume={volume}
           onVolumeChange={handleVolumeChange}
+          bgmVolume={bgmVolume}
+          onBgmVolumeChange={handleBgmVolumeChange}
+          keyMapping={keyMapping}
+          onKeyMappingChange={handleKeyMappingChange}
+          moveOrientation={moveOrientation}
+          onMoveOrientationChange={handleMoveOrientationChange}
           onTeleport={handleTeleport}
         />
       )}

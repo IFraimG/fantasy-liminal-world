@@ -12,6 +12,10 @@ export class WinterAudioSystem {
 
   public enabled = true;
   public volume = 0.6;
+  public bgmVolume = 0.65;
+
+  private bgmAudio: HTMLAudioElement | null = null;
+  private isBgmPlaying = false;
 
   private initContext(): void {
     if (!this.ctx) {
@@ -117,5 +121,48 @@ export class WinterAudioSystem {
     if (this.windGain && this.ctx) {
       this.windGain.gain.setTargetAtTime(this.volume * 0.28, this.ctx.currentTime, 0.2);
     }
+    if (this.bgmAudio) {
+      this.bgmAudio.volume = this.volume * this.bgmVolume;
+    }
+  }
+
+  /**
+   * Starts background atmospheric music stream from mp3
+   */
+  public startBgm(): void {
+    if (this.isBgmPlaying && this.bgmAudio && !this.bgmAudio.paused) return;
+
+    if (!this.bgmAudio) {
+      this.bgmAudio = new Audio('./audio/a-coldcore-playlist-SnapYT.App.mp3');
+      this.bgmAudio.loop = true;
+      this.bgmAudio.preload = 'auto';
+    }
+
+    this.bgmAudio.volume = this.volume * this.bgmVolume;
+    const playPromise = this.bgmAudio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          this.isBgmPlaying = true;
+        })
+        .catch((err) => {
+          console.warn('Audio autoplay delayed until user click:', err);
+        });
+    }
+  }
+
+  public stopBgm(): void {
+    if (this.bgmAudio) {
+      this.bgmAudio.pause();
+      this.isBgmPlaying = false;
+    }
+  }
+
+  public setBgmVolume(val: number): void {
+    this.bgmVolume = Math.max(0, Math.min(1, val));
+    if (this.bgmAudio) {
+      this.bgmAudio.volume = this.volume * this.bgmVolume;
+    }
   }
 }
+

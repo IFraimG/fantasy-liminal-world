@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sliders, Volume2, VolumeX, CloudSnow, Eye, Navigation, Maximize2 } from 'lucide-react';
+import { Sliders, Volume2, VolumeX, CloudSnow, Eye, Navigation, Maximize2, Music, Compass } from 'lucide-react';
 
 interface AtmosphereControlsProps {
   blizzardIntensity: number;
@@ -8,6 +8,12 @@ interface AtmosphereControlsProps {
   onFogChange: (val: number) => void;
   volume: number;
   onVolumeChange: (val: number) => void;
+  bgmVolume: number;
+  onBgmVolumeChange: (val: number) => void;
+  keyMapping: 'user_custom' | 'classic';
+  onKeyMappingChange: (val: 'user_custom' | 'classic') => void;
+  moveOrientation: 'fixed_world' | 'camera';
+  onMoveOrientationChange: (val: 'fixed_world' | 'camera') => void;
   onTeleport: (x: number, z: number) => void;
 }
 
@@ -18,6 +24,12 @@ export const AtmosphereControls: React.FC<AtmosphereControlsProps> = ({
   onFogChange,
   volume,
   onVolumeChange,
+  bgmVolume,
+  onBgmVolumeChange,
+  keyMapping,
+  onKeyMappingChange,
+  moveOrientation,
+  onMoveOrientationChange,
   onTeleport
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -166,6 +178,110 @@ export const AtmosphereControls: React.FC<AtmosphereControlsProps> = ({
                 }}
                 style={{ flex: 1, accentColor: '#22c55e', cursor: 'pointer' }}
               />
+            </div>
+          </div>
+
+          {/* Background Music Volume Slider */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f472b6' }}>
+                <Music size={15} /> Фоновая музыка (MP3)
+              </span>
+              <span style={{ fontWeight: 600 }}>{Math.round(bgmVolume * 100)}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={bgmVolume}
+              onChange={(e) => onBgmVolumeChange(parseFloat(e.target.value))}
+              style={{ width: '100%', accentColor: '#ec4899', cursor: 'pointer' }}
+            />
+          </div>
+
+          {/* Movement Mode & Keymapping */}
+          <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#38bdf8', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 600 }}>
+              <Compass size={13} /> Управление перемещением
+            </div>
+            
+            {/* Key mapping selector */}
+            <div style={{ marginBottom: '8px' }}>
+              <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>Раскладка клавиш:</div>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button
+                  onClick={() => onKeyMappingChange('user_custom')}
+                  style={{
+                    flex: 1,
+                    padding: '6px 4px',
+                    fontSize: '10px',
+                    borderRadius: '6px',
+                    border: keyMapping === 'user_custom' ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.1)',
+                    background: keyMapping === 'user_custom' ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                    color: keyMapping === 'user_custom' ? '#f8fafc' : '#94a3b8',
+                    cursor: 'pointer',
+                    fontWeight: keyMapping === 'user_custom' ? 600 : 400
+                  }}
+                >
+                  W(вперед) A(назад)<br/>S(влево) D(вправо)
+                </button>
+                <button
+                  onClick={() => onKeyMappingChange('classic')}
+                  style={{
+                    flex: 1,
+                    padding: '6px 4px',
+                    fontSize: '10px',
+                    borderRadius: '6px',
+                    border: keyMapping === 'classic' ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.1)',
+                    background: keyMapping === 'classic' ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                    color: keyMapping === 'classic' ? '#f8fafc' : '#94a3b8',
+                    cursor: 'pointer',
+                    fontWeight: keyMapping === 'classic' ? 600 : 400
+                  }}
+                >
+                  Классика WASD<br/>(W-вперед, S-назад)
+                </button>
+              </div>
+            </div>
+
+            {/* Movement orientation selector */}
+            <div>
+              <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>Ориентация движения:</div>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button
+                  onClick={() => onMoveOrientationChange('fixed_world')}
+                  style={{
+                    flex: 1,
+                    padding: '6px 4px',
+                    fontSize: '10px',
+                    borderRadius: '6px',
+                    border: moveOrientation === 'fixed_world' ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.1)',
+                    background: moveOrientation === 'fixed_world' ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                    color: moveOrientation === 'fixed_world' ? '#f8fafc' : '#94a3b8',
+                    cursor: 'pointer',
+                    fontWeight: moveOrientation === 'fixed_world' ? 600 : 400
+                  }}
+                >
+                  🧭 Фиксированные стороны мира
+                </button>
+                <button
+                  onClick={() => onMoveOrientationChange('camera')}
+                  style={{
+                    flex: 1,
+                    padding: '6px 4px',
+                    fontSize: '10px',
+                    borderRadius: '6px',
+                    border: moveOrientation === 'camera' ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.1)',
+                    background: moveOrientation === 'camera' ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                    color: moveOrientation === 'camera' ? '#f8fafc' : '#94a3b8',
+                    cursor: 'pointer',
+                    fontWeight: moveOrientation === 'camera' ? 600 : 400
+                  }}
+                >
+                  👁️ По взгляду камеры
+                </button>
+              </div>
             </div>
           </div>
 

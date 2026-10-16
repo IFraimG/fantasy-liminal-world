@@ -136,7 +136,7 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
           </div>
           <div style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: '1.5' }}>
             Двигайте мышью для свободного взгляда во все стороны.<br />
-            Клавиши <b>W, A, S, D</b> или <b>Стрелки</b> для ходьбы.<br />
+            Клавиши: <b>W (вперед), A (назад), S (влево), D (вправо)</b> или <b>Стрелки</b>.<br />
             Зажмите <b>Shift</b> для бега по снегу.
           </div>
         </div>

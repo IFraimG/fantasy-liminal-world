@@ -202,6 +202,23 @@ export class SnowWorldEngine {
     this.audioSystem.setVolume(val);
   }
 
+  public setBgmVolume(val: number): void {
+    this.audioSystem.setBgmVolume(val);
+  }
+
+  public startAudio(): void {
+    this.audioSystem.startWind();
+    this.audioSystem.startBgm();
+  }
+
+  public setKeyMapping(mapping: 'user_custom' | 'classic'): void {
+    this.controller.setKeyMapping(mapping);
+  }
+
+  public setMoveOrientation(orientation: 'fixed_world' | 'camera'): void {
+    this.controller.setMoveOrientation(orientation);
+  }
+
   public teleport(x: number, z: number): void {
     this.controller.teleport(x, z);
     this.chunkManager.update(this.controller.playerPos);

@@ -33,6 +33,15 @@ export class FirstPersonController {
   private direction = new Vector3();
   private keys: Record<string, boolean> = {};
 
+  // Movement orientation & key mappings
+  public keyMapping: 'user_custom' | 'classic' = 'user_custom';
+  public moveOrientation: 'fixed_world' | 'camera' = 'fixed_world';
+
+  // Pre-allocated vectors to avoid per-frame allocations
+  private tempCamDir = new Vector3();
+  private tempCamRight = new Vector3();
+  private tempMoveVec = new Vector3();
+
   // Head bobbing
   private bobTime = 0;
   private totalDistance = 0;
@@ -60,6 +69,7 @@ export class FirstPersonController {
       this.keys[e.code] = true;
       // Start audio on first keypress
       this.audioSystem.startWind();
+      this.audioSystem.startBgm();
     });
 
     window.addEventListener('keyup', (e) => {
@@ -69,6 +79,7 @@ export class FirstPersonController {
     this.domElement.addEventListener('click', () => {
       this.requestLock();
       this.audioSystem.startWind();
+      this.audioSystem.startBgm();
     });
 
     document.addEventListener('pointerlockchange', () => {
@@ -102,27 +113,51 @@ export class FirstPersonController {
     const currentSpeed = this.moveSpeed * (isRunning ? this.runMultiplier : 1.0);
 
     // Read directional inputs
-    const forward = (this.keys['KeyW'] || this.keys['ArrowUp'] ? 1 : 0) - (this.keys['KeyS'] || this.keys['ArrowDown'] ? 1 : 0);
-    const side = (this.keys['KeyD'] || this.keys['ArrowRight'] ? 1 : 0) - (this.keys['KeyA'] || this.keys['ArrowLeft'] ? 1 : 0);
+    let moveZ = 0; // -1 is forward (North), +1 is backward (South)
+    let moveX = 0; // -1 is left (West), +1 is right (East)
 
-    this.direction.set(side, 0, -forward);
-    if (this.direction.lengthSq() > 0) {
-      this.direction.normalize();
+    if (this.keyMapping === 'user_custom') {
+      // User-requested mapping: W - вперед, A - назад, S - влево, D - вправо
+      if (this.keys['KeyW'] || this.keys['ArrowUp']) moveZ -= 1;
+      if (this.keys['KeyA'] || this.keys['ArrowDown']) moveZ += 1;
+      if (this.keys['KeyS'] || this.keys['ArrowLeft']) moveX -= 1;
+      if (this.keys['KeyD'] || this.keys['ArrowRight']) moveX += 1;
+    } else {
+      // Classic WASD: W - вперед, S - назад, A - влево, D - вправо
+      if (this.keys['KeyW'] || this.keys['ArrowUp']) moveZ -= 1;
+      if (this.keys['KeyS'] || this.keys['ArrowDown']) moveZ += 1;
+      if (this.keys['KeyA'] || this.keys['ArrowLeft']) moveX -= 1;
+      if (this.keys['KeyD'] || this.keys['ArrowRight']) moveX += 1;
     }
 
-    const isMoving = forward !== 0 || side !== 0;
+    const isMoving = moveZ !== 0 || moveX !== 0;
 
     if (isMoving) {
-      // Calculate world movement aligned with camera yaw
-      const yaw = this.euler.y;
-      const sin = Math.sin(yaw);
-      const cos = Math.cos(yaw);
+      // Normalize combined inputs
+      const inputLen = Math.hypot(moveX, moveZ);
+      const normX = moveX / inputLen;
+      const normZ = moveZ / inputLen;
 
-      const worldX = this.direction.x * cos - this.direction.z * sin;
-      const worldZ = this.direction.x * sin + this.direction.z * cos;
+      if (this.moveOrientation === 'camera') {
+        // Move relative to where camera is facing
+        this.camera.getWorldDirection(this.tempCamDir);
+        this.tempCamDir.y = 0;
+        this.tempCamDir.normalize();
 
-      this.velocity.x = worldX * currentSpeed;
-      this.velocity.z = worldZ * currentSpeed;
+        this.tempCamRight.crossVectors(this.tempCamDir, this.camera.up).normalize();
+
+        // normZ: -1 is forward, +1 is backward
+        // normX: -1 is left, +1 is right
+        this.tempMoveVec.set(0, 0, 0)
+          .addScaledVector(this.tempCamDir, -normZ)
+          .addScaledVector(this.tempCamRight, normX);
+      } else {
+        // Fixed world coordinates: each key moves in its specific cardinal direction
+        this.tempMoveVec.set(normX, 0, normZ);
+      }
+
+      this.velocity.x = this.tempMoveVec.x * currentSpeed;
+      this.velocity.z = this.tempMoveVec.z * currentSpeed;
 
       const stepDist = currentSpeed * delta;
       this.totalDistance += stepDist;
@@ -175,4 +210,13 @@ export class FirstPersonController {
     this.playerPos.z = z;
     this.camera.position.set(x, this.eyeHeight, z);
   }
+
+  public setKeyMapping(mapping: 'user_custom' | 'classic'): void {
+    this.keyMapping = mapping;
+  }
+
+  public setMoveOrientation(orientation: 'fixed_world' | 'camera'): void {
+    this.moveOrientation = orientation;
+  }
 }
+
