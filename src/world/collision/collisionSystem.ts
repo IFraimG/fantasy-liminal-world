@@ -19,10 +19,8 @@ export interface BuildingInterior {
   baseY: number;
   floors: number;
   floorHeight: number;
-  stairMinX: number;
-  stairMaxX: number;
-  stairMinZ: number;
-  stairMaxZ: number;
+  originX: number;
+  originZ: number;
   doorX: number;
   doorZ: number;
 }
@@ -31,7 +29,7 @@ export interface BuildingInterior {
  * Solid Collision & Navigation System:
  * - Prevents player from clipping through walls, buildings, garages, trees, and poles
  * - Implements smooth wall sliding (no sticky corners)
- * - Tracks building interiors, floor slabs, and staircases for multi-story exploration
+ * - Tracks building interiors, floor slabs, and authentic two-flight Soviet staircases (Series 1-335)
  */
 export class CollisionSystem {
   private static colliders: BoxCollider[] = [];
@@ -132,7 +130,7 @@ export class CollisionSystem {
 
   /**
    * Calculates the exact ground height for the player, smoothly transitioning
-   * between outdoor terrain, entrance doorways, staircases, and indoor floors.
+   * between outdoor terrain, entrance doorways, two-flight Soviet staircases (Series 1-335), and apartment floors.
    */
   public static getPlayerGroundY(
     x: number,
@@ -142,22 +140,39 @@ export class CollisionSystem {
   ): number {
     for (const b of this.interiors) {
       if (x >= b.minX && x <= b.maxX && z >= b.minZ && z <= b.maxZ) {
-        // Player is inside a building!
-        // Check if player is on the staircase ramp
-        if (x >= b.stairMinX && x <= b.stairMaxX && z >= b.stairMinZ && z <= b.stairMaxZ) {
-          const stairLen = b.stairMaxZ - b.stairMinZ;
-          const t = Math.max(0, Math.min(1.0, (z - b.stairMinZ) / stairLen));
+        // Player is inside this building!
+        const relX = x - b.originX;
+        const relZ = z - b.originZ;
 
-          // Determine current floor segment
+        // Check if inside the stairwell: relX in [-1.7, 1.7], relZ in [-2.0, 5.8]
+        if (relX >= -1.7 && relX <= 1.7 && relZ >= -2.0 && relZ <= 5.8) {
           const relY = Math.max(0, currentY - b.baseY);
-          const currentFloor = Math.floor(relY / b.floorHeight);
-          const clampedFloor = Math.max(0, Math.min(b.floors - 2, currentFloor));
+          const currentFloor = Math.max(0, Math.min(b.floors - 2, Math.floor((relY + 0.2) / b.floorHeight)));
+          const floorBase = b.baseY + currentFloor * b.floorHeight;
 
-          const floorBase = b.baseY + clampedFloor * b.floorHeight;
-          return floorBase + t * b.floorHeight;
+          if (relZ >= 2.8) {
+            // Floor landing (этажная площадка)
+            const topFloor = Math.min(b.floors - 1, Math.round(relY / b.floorHeight));
+            return b.baseY + topFloor * b.floorHeight;
+          } else if (relZ <= -0.5) {
+            // Intermediate landing (междуэтажная площадка)
+            return floorBase + b.floorHeight * 0.5;
+          } else {
+            // Flight stairs: relZ is between -0.5 and 2.8 (length = 3.3m)
+            const flightLen = 3.3;
+            if (relX > 0) {
+              // Flight 1 (ascending from floor landing at z = 2.8 towards intermediate landing at z = -0.5)
+              const t = Math.max(0, Math.min(1.0, (2.8 - relZ) / flightLen));
+              return floorBase + t * (b.floorHeight * 0.5);
+            } else {
+              // Flight 2 (ascending from intermediate landing at z = -0.5 towards next floor landing at z = 2.8)
+              const t = Math.max(0, Math.min(1.0, (relZ - (-0.5)) / flightLen));
+              return floorBase + b.floorHeight * 0.5 + t * (b.floorHeight * 0.5);
+            }
+          }
         }
 
-        // On a floor slab (room or hallway)
+        // Inside apartments/corridors on a floor slab
         const relY = currentY - b.baseY;
         const floorIdx = Math.max(0, Math.min(b.floors - 1, Math.round(relY / b.floorHeight)));
         return b.baseY + floorIdx * b.floorHeight;
