@@ -1,5 +1,6 @@
 import { Camera, Vector3, Euler } from '@iwsdk/core';
 import { WinterAudioSystem } from './effects/audio.js';
+import { TerrainElevation } from './procedural/terrain.js';
 
 export interface PlayerMovementState {
   position: Vector3;
@@ -19,9 +20,10 @@ export class FirstPersonController {
   private moveSpeed = 4.5; // m/s walking in snow
   private runMultiplier = 1.75; // running in snow
   private eyeHeight = 2.12; // elevated above the ibis head for clear first-person view
+  public groundY = 0; // terrain elevation at player position
 
   // World position tracking
-  public playerPos = new Vector3(0, 2.12, 0);
+  public playerPos = new Vector3(0, 0, 0);
 
   // Rotation
   private euler = new Euler(0, 0, 0, 'YXZ');
@@ -63,8 +65,9 @@ export class FirstPersonController {
       (camera as unknown as { near: number; updateProjectionMatrix: () => void }).updateProjectionMatrix();
     }
 
-    this.playerPos.set(0, this.eyeHeight, 0);
-    this.camera.position.copy(this.playerPos);
+    this.groundY = TerrainElevation.getHeight(0, 0);
+    this.playerPos.set(0, this.groundY, 0);
+    this.camera.position.set(0, this.groundY + this.eyeHeight, 0);
 
     this.bindEvents();
   }
@@ -194,23 +197,29 @@ export class FirstPersonController {
       this.velocity.z *= 0.8;
     }
 
+    // Snap ground height smoothly to terrain elevation
+    const targetGroundY = TerrainElevation.getHeight(this.playerPos.x, this.playerPos.z);
+    this.groundY += (targetGroundY - this.groundY) * Math.min(1.0, delta * 12.0);
+    this.playerPos.y = this.groundY;
+
     // Camera placement: 3rd-person front selfie inspection (key '5') OR 1st-person above head
     if (this.isThirdPersonFront) {
       // Position camera 2.9m directly in front of the ibis, looking back at the full body
       const yaw = this.euler.y;
       const frontDist = 2.9;
       const camX = this.playerPos.x - Math.sin(yaw) * frontDist;
-      const camY = 1.15;
       const camZ = this.playerPos.z - Math.cos(yaw) * frontDist;
+      const frontGroundY = TerrainElevation.getHeight(camX, camZ);
+      const camY = Math.max(frontGroundY + 0.6, this.groundY + 1.15);
 
       this.camera.position.set(camX, camY, camZ);
-      this.camera.lookAt(this.playerPos.x, 1.15, this.playerPos.z);
+      this.camera.lookAt(this.playerPos.x, this.groundY + 1.15, this.playerPos.z);
     } else {
       // Normal 1st-person view directly above the ibis head
       const bobY = isMoving ? Math.sin(this.bobTime) * (isRunning ? 0.05 : 0.025) : 0;
       this.camera.position.set(
         this.playerPos.x,
-        this.eyeHeight + bobY,
+        this.groundY + this.eyeHeight + bobY,
         this.playerPos.z
       );
       this.camera.quaternion.setFromEuler(this.euler);
@@ -233,9 +242,10 @@ export class FirstPersonController {
   }
 
   public teleport(x: number, z: number): void {
-    this.playerPos.x = x;
-    this.playerPos.z = z;
-    this.camera.position.set(x, this.eyeHeight, z);
+    const gy = TerrainElevation.getHeight(x, z);
+    this.groundY = gy;
+    this.playerPos.set(x, gy, z);
+    this.camera.position.set(x, gy + this.eyeHeight, z);
   }
 
   public setKeyMapping(mapping: 'user_custom' | 'classic'): void {

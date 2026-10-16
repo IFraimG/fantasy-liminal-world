@@ -154,8 +154,8 @@ export class SnowWorldEngine {
 
     const playerPos = this.controller.playerPos;
 
-    // Synchronize Ibis player model
-    this.ibisModel.setPosition(playerPos.x, 0, playerPos.z);
+    // Synchronize Ibis player model on terrain surface
+    this.ibisModel.setPosition(playerPos.x, playerPos.y, playerPos.z);
     this.ibisModel.setRotationY(this.controller.getYaw());
     this.ibisModel.update(
       delta,
