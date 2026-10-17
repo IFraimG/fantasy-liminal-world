@@ -414,9 +414,11 @@ export class BuildingGenerator {
       rightUpper.position.set(stairHalfW + partThick / 2, floorY + lowerH + upperH / 2, 0);
       group.add(rightUpper);
 
-      // Floor Landing slab (этажная площадка)
-      const landingMesh = new Mesh(new BoxGeometry(stairHalfW * 2, 0.2, frontZ - landingZStart), this.getStairwellFloorMaterial());
-      landingMesh.position.set(0, floorY + 0.1, (frontZ + landingZStart) / 2);
+      // Floor Landing slab (этажная площадка) - strictly inside stairwell interior
+      const maxLandingZ = frontZ - wallThick - 0.08;
+      const landingDepth = maxLandingZ - landingZStart;
+      const landingMesh = new Mesh(new BoxGeometry(stairHalfW * 2 - 0.1, 0.16, landingDepth), this.getStairwellFloorMaterial());
+      landingMesh.position.set(0, floorY + 0.08, landingZStart + landingDepth / 2);
       group.add(landingMesh);
 
       // Intermediate Landing slab (междуэтажная площадка у окна)
@@ -526,30 +528,33 @@ export class BuildingGenerator {
       // ==========================================
       // APARTMENTS & CORRIDORS (4 КВАРТИРЫ НА ЭТАЖЕ)
       // ==========================================
-      // Left Wing Floor Slab (квартиры 1 и 2)
-      const leftWingW = width / 2 - stairHalfW - partThick;
-      const leftWingMesh = new Mesh(new BoxGeometry(leftWingW, 0.2, depth - 0.4), this.getAptFloorMaterial());
-      leftWingMesh.position.set(-width / 2 + leftWingW / 2, floorY + 0.1, 0);
+      const aptFloorW = (width / 2 - stairHalfW - partThick) - wallThick - 0.15;
+      const aptFloorDepth = depth - wallThick * 2 - 0.2; // 11.1m (strictly inside frontZ and backZ)
+      const leftCenterX = -width / 2 + wallThick + 0.08 + aptFloorW / 2;
+      const rightCenterX = width / 2 - wallThick - 0.08 - aptFloorW / 2;
+
+      // Left Wing Floor Slab (квартиры 1 и 2) - safely inside interior boundaries (ZERO facade bleed)
+      const leftWingMesh = new Mesh(new BoxGeometry(aptFloorW, 0.16, aptFloorDepth), this.getAptFloorMaterial());
+      leftWingMesh.position.set(leftCenterX, floorY + 0.08, 0);
       group.add(leftWingMesh);
 
-      // Right Wing Floor Slab (квартиры 3 и 4)
-      const rightWingW = width / 2 - stairHalfW - partThick;
-      const rightWingMesh = new Mesh(new BoxGeometry(rightWingW, 0.2, depth - 0.4), this.getAptFloorMaterial());
-      rightWingMesh.position.set(width / 2 - rightWingW / 2, floorY + 0.1, 0);
+      // Right Wing Floor Slab (квартиры 3 и 4) - safely inside interior boundaries (ZERO facade bleed)
+      const rightWingMesh = new Mesh(new BoxGeometry(aptFloorW, 0.16, aptFloorDepth), this.getAptFloorMaterial());
+      rightWingMesh.position.set(rightCenterX, floorY + 0.08, 0);
       group.add(rightWingMesh);
 
       // Inter-apartment dividing wall (между передними и задними квартирами по z = 0.8)
       // Left wing partition
-      const leftDiv = new Mesh(new BoxGeometry(leftWingW, floorHeight, partThick), this.getAptWallMaterial());
-      leftDiv.position.set(-width / 2 + leftWingW / 2, floorY + floorHeight / 2, 0.8);
+      const leftDiv = new Mesh(new BoxGeometry(aptFloorW, floorHeight, partThick), this.getAptWallMaterial());
+      leftDiv.position.set(leftCenterX, floorY + floorHeight / 2, 0.8);
       group.add(leftDiv);
-      addCol(-width / 2, -stairHalfW, 0.8 - partThick / 2, 0.8 + partThick / 2);
+      addCol(leftCenterX - aptFloorW / 2, leftCenterX + aptFloorW / 2, 0.8 - partThick / 2, 0.8 + partThick / 2);
 
       // Right wing partition
-      const rightDiv = new Mesh(new BoxGeometry(rightWingW, floorHeight, partThick), this.getAptWallMaterial());
-      rightDiv.position.set(width / 2 - rightWingW / 2, floorY + floorHeight / 2, 0.8);
+      const rightDiv = new Mesh(new BoxGeometry(aptFloorW, floorHeight, partThick), this.getAptWallMaterial());
+      rightDiv.position.set(rightCenterX, floorY + floorHeight / 2, 0.8);
       group.add(rightDiv);
-      addCol(stairHalfW, width / 2, 0.8 - partThick / 2, 0.8 + partThick / 2);
+      addCol(rightCenterX - aptFloorW / 2, rightCenterX + aptFloorW / 2, 0.8 - partThick / 2, 0.8 + partThick / 2);
 
       // Corridor partition walls inside apartments (прихожие)
       // Left apartment corridor wall (forming hallway from door to rooms)

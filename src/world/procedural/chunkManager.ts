@@ -185,6 +185,25 @@ export class ChunkManager {
     // Height helper for local chunk coordinates
     const getH = (lx: number, lz: number) => TerrainElevation.getHeight(originX + lx, originZ + lz);
 
+    const addTreeCol = (px: number, pz: number, r: number = 0.45) => {
+      CollisionSystem.addCollider({
+        minX: originX + px - r,
+        maxX: originX + px + r,
+        minZ: originZ + pz - r,
+        maxZ: originZ + pz + r,
+        id: `chunk_${cx}_${cz}_tree_${Math.round(px)}_${Math.round(pz)}`
+      });
+    };
+    const addPoleCol = (px: number, pz: number, r: number = 0.35) => {
+      CollisionSystem.addCollider({
+        minX: originX + px - r,
+        maxX: originX + px + r,
+        minZ: originZ + pz - r,
+        maxZ: originZ + pz + r,
+        id: `chunk_${cx}_${cz}_pole_${Math.round(px)}_${Math.round(pz)}`
+      });
+    };
+
     let buildingCount = 0;
     let lampCount = 0;
     const chunkDoors: AnimatedDoor[] = [];
@@ -208,16 +227,19 @@ export class ChunkManager {
         pole1.position.set(-6, getH(-6, -18), -18);
         group.add(pole1);
         lampCount++;
+        addPoleCol(-6, -18);
 
         const pole2 = StreetPropsGenerator.createTelegraphPole(false);
         pole2.position.set(6, getH(6, 18), 18);
         pole2.rotation.y = Math.PI;
         group.add(pole2);
+        addPoleCol(6, 18);
 
         for (const [px, pz] of [[-16, -10], [-20, 12], [18, -8], [22, 14]]) {
           const pine = StreetPropsGenerator.createTallPineTree(14 + r2 * 6);
           pine.position.set(px, getH(px, pz), pz);
           group.add(pine);
+          addTreeCol(px, pz);
         }
 
         const drift = SnowdriftGenerator.createConformalSnowMound(originX + 12, originZ, 18, 3.2, 1.2);
@@ -240,12 +262,14 @@ export class ChunkManager {
           pine.position.set(px, getH(px, pz), pz);
           pine.rotation.y = i * 1.3;
           group.add(pine);
+          addTreeCol(px, pz, 0.5);
         }
 
         const pole = StreetPropsGenerator.createTelegraphPole(true);
         pole.position.set(2, getH(2, -2), -2);
         group.add(pole);
         lampCount++;
+        addPoleCol(2, -2);
 
         const cross = StreetPropsGenerator.createNorthernCross(1.2);
         cross.position.set(-12, getH(-12, 4), 4);
@@ -288,6 +312,7 @@ export class ChunkManager {
           const pine = StreetPropsGenerator.createTallPineTree(15 + r3 * 4);
           pine.position.set(px, getH(px, pz), pz);
           group.add(pine);
+          addTreeCol(px, pz);
         }
 
         if (r4 > 0.4) {
@@ -317,11 +342,13 @@ export class ChunkManager {
         lamp.position.set(-8, getH(-8, 22), 22);
         group.add(lamp);
         lampCount++;
+        addPoleCol(-8, 22);
 
         for (const [px, pz] of [[-18, -14], [-16, 16], [16, -18], [18, 12]]) {
           const pine = StreetPropsGenerator.createTallPineTree(14);
           pine.position.set(px, getH(px, pz), pz);
           group.add(pine);
+          addTreeCol(px, pz);
         }
 
         const drift = SnowdriftGenerator.createConformalSnowMound(originX + 10, originZ - 10, 16, 2.8, 1.2);
@@ -352,12 +379,14 @@ export class ChunkManager {
           const pine = StreetPropsGenerator.createTallPineTree(15 + r2 * 4);
           pine.position.set(px, getH(px, pz), pz);
           group.add(pine);
+          addTreeCol(px, pz);
         }
 
         const pole = StreetPropsGenerator.createTelegraphPole(true);
         pole.position.set(16, getH(16, 0), 0);
         group.add(pole);
         lampCount++;
+        addPoleCol(16, 0);
 
       } else {
         // Variant 5: "Спальный массив на сопках" (Multi-story building with real interior & deep foundation)
@@ -382,20 +411,24 @@ export class ChunkManager {
         lamp1.position.set(-12, getH(-12, 6), 6);
         group.add(lamp1);
         lampCount++;
+        addPoleCol(-12, 6);
 
         const lamp2 = StreetPropsGenerator.createStreetLamp(false);
         lamp2.position.set(12, getH(12, 6), 6);
         lamp2.rotation.y = Math.PI;
         group.add(lamp2);
         lampCount++;
+        addPoleCol(12, 6);
 
         const tree = StreetPropsGenerator.createWinterTree();
         tree.position.set(-18, getH(-18, -4), -4);
         group.add(tree);
+        addTreeCol(-18, -4);
 
         const pine = StreetPropsGenerator.createTallPineTree(16);
         pine.position.set(20, getH(20, -10), -10);
         group.add(pine);
+        addTreeCol(20, -10);
 
         if (r4 > 0.4) {
           const garage = StreetPropsGenerator.createGarage();
@@ -419,6 +452,7 @@ export class ChunkManager {
       lamp.position.set(6, getH(6, 8), 8);
       group.add(lamp);
       lampCount++;
+      addPoleCol(6, 8);
 
       const bz = -26;
       const by = getH(0, bz);
@@ -438,14 +472,17 @@ export class ChunkManager {
       const tree = StreetPropsGenerator.createWinterTree();
       tree.position.set(-12, getH(-12, 6), 6);
       group.add(tree);
+      addTreeCol(-12, 6);
 
       const tallPine = StreetPropsGenerator.createTallPineTree(15);
       tallPine.position.set(18, getH(18, -14), -14);
       group.add(tallPine);
+      addTreeCol(18, -14);
 
       const telegraph = StreetPropsGenerator.createTelegraphPole(false);
       telegraph.position.set(-18, getH(-18, -10), -10);
       group.add(telegraph);
+      addPoleCol(-18, -10);
 
       const spawnDrift = SnowdriftGenerator.createConformalSnowMound(originX + 10, originZ + 12, 16, 4, 1.0);
       spawnDrift.position.set(10, 0, 12);

@@ -62,8 +62,8 @@ export class CollisionSystem {
   }
 
   /**
-   * Resolves player movement with sliding collision detection.
-   * Returns the new adjusted position that does not penetrate any solid obstacles.
+   * Resolves player movement with continuous circle-to-AABB penetration & pushout.
+   * Prevents clipping through walls, trees, poles, and corners while enabling smooth sliding.
    */
   public static resolveMovement(
     currentPos: Vector3,
@@ -71,61 +71,68 @@ export class CollisionSystem {
     playerY: number,
     radius: number = CollisionSystem.PLAYER_RADIUS
   ): { x: number; z: number } {
-    let resolvedX = desiredPos.x;
-    let resolvedZ = desiredPos.z;
+    let px = desiredPos.x;
+    let pz = desiredPos.z;
 
-    const dx = desiredPos.x - currentPos.x;
-    const dz = desiredPos.z - currentPos.z;
-
-    // Filter relevant colliders nearby (within 12m) to keep per-frame performance under 0.05ms
+    // Filter relevant colliders nearby (within 8m)
     const nearby = this.colliders.filter(c => {
       if (c.minY !== undefined && c.maxY !== undefined) {
         if (playerY + 1.8 < c.minY || playerY + 0.15 > c.maxY) return false;
       }
       return (
-        currentPos.x >= c.minX - 12 &&
-        currentPos.x <= c.maxX + 12 &&
-        currentPos.z >= c.minZ - 12 &&
-        currentPos.z <= c.maxZ + 12
+        px >= c.minX - radius - 2.5 &&
+        px <= c.maxX + radius + 2.5 &&
+        pz >= c.minZ - radius - 2.5 &&
+        pz <= c.maxZ + radius + 2.5
       );
     });
 
-    // 1. Resolve X movement against colliders
-    if (Math.abs(dx) > 0.0001) {
+    if (nearby.length === 0) {
+      return { x: px, z: pz };
+    }
+
+    // Up to 4 relaxation iterations for corners and multi-wall contacts
+    for (let iter = 0; iter < 4; iter++) {
+      let anyCollision = false;
+
       for (const c of nearby) {
-        if (this.testOverlap(resolvedX, currentPos.z, radius, c)) {
-          if (dx > 0) {
-            resolvedX = Math.min(resolvedX, c.minX - radius - 0.001);
+        // Find closest point on AABB to player center (px, pz)
+        const qx = Math.max(c.minX, Math.min(c.maxX, px));
+        const qz = Math.max(c.minZ, Math.min(c.maxZ, pz));
+
+        const vx = px - qx;
+        const vz = pz - qz;
+        const distSq = vx * vx + vz * vz;
+
+        if (distSq < radius * radius) {
+          anyCollision = true;
+          const dist = Math.sqrt(distSq);
+
+          if (dist > 0.0001) {
+            // Player is outside/intersecting edge: push out along contact normal
+            const pen = radius - dist + 0.001;
+            px += (vx / dist) * pen;
+            pz += (vz / dist) * pen;
           } else {
-            resolvedX = Math.max(resolvedX, c.maxX + radius + 0.001);
+            // Player center is inside AABB: push out to the nearest face
+            const dLeft = px - c.minX;
+            const dRight = c.maxX - px;
+            const dBottom = pz - c.minZ;
+            const dTop = c.maxZ - pz;
+            const minD = Math.min(dLeft, dRight, dBottom, dTop);
+
+            if (minD === dLeft) px = c.minX - radius - 0.002;
+            else if (minD === dRight) px = c.maxX + radius + 0.002;
+            else if (minD === dBottom) pz = c.minZ - radius - 0.002;
+            else pz = c.maxZ + radius + 0.002;
           }
         }
       }
+
+      if (!anyCollision) break;
     }
 
-    // 2. Resolve Z movement against colliders
-    if (Math.abs(dz) > 0.0001) {
-      for (const c of nearby) {
-        if (this.testOverlap(resolvedX, resolvedZ, radius, c)) {
-          if (dz > 0) {
-            resolvedZ = Math.min(resolvedZ, c.minZ - radius - 0.001);
-          } else {
-            resolvedZ = Math.max(resolvedZ, c.maxZ + radius + 0.001);
-          }
-        }
-      }
-    }
-
-    return { x: resolvedX, z: resolvedZ };
-  }
-
-  private static testOverlap(x: number, z: number, r: number, c: BoxCollider): boolean {
-    return (
-      x + r > c.minX &&
-      x - r < c.maxX &&
-      z + r > c.minZ &&
-      z - r < c.maxZ
-    );
+    return { x: px, z: pz };
   }
 
   /**
