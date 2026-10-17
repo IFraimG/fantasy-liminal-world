@@ -220,8 +220,8 @@ export class ChunkManager {
           group.add(pine);
         }
 
-        const drift = SnowdriftGenerator.createSnowMound(18, 3.2, 1.2);
-        drift.position.set(12, getH(12, 0), 0);
+        const drift = SnowdriftGenerator.createConformalSnowMound(originX + 12, originZ, 18, 3.2, 1.2);
+        drift.position.set(12, 0, 0);
         group.add(drift);
 
       } else if (variant === 1) {
@@ -251,8 +251,8 @@ export class ChunkManager {
         cross.position.set(-12, getH(-12, 4), 4);
         group.add(cross);
 
-        const drift1 = SnowdriftGenerator.createSnowMound(22, 3.5, 1.4);
-        drift1.position.set(-8, getH(-8, -12), -12);
+        const drift1 = SnowdriftGenerator.createConformalSnowMound(originX - 8, originZ - 12, 22, 3.5, 1.4);
+        drift1.position.set(-8, 0, -12);
         group.add(drift1);
 
       } else if (variant === 2) {
@@ -276,12 +276,12 @@ export class ChunkManager {
           });
         }
 
-        const roadDriftL = SnowdriftGenerator.createSnowMound(44, 2.4, 0.8);
-        roadDriftL.position.set(-14, getH(-14, 0), 0);
+        const roadDriftL = SnowdriftGenerator.createConformalSnowMound(originX - 14, originZ, 36, 2.6, 0.9);
+        roadDriftL.position.set(-14, 0, 0);
         group.add(roadDriftL);
 
-        const roadDriftR = SnowdriftGenerator.createSnowMound(44, 2.2, 0.8);
-        roadDriftR.position.set(14, getH(14, 0), 0);
+        const roadDriftR = SnowdriftGenerator.createConformalSnowMound(originX + 14, originZ, 36, 2.6, 0.9);
+        roadDriftR.position.set(14, 0, 0);
         group.add(roadDriftR);
 
         for (const [px, pz] of [[18, -20], [22, 2], [16, 22], [-22, -14], [-24, 16]]) {
@@ -324,8 +324,8 @@ export class ChunkManager {
           group.add(pine);
         }
 
-        const drift = SnowdriftGenerator.createSnowMound(16, 2.8, 1.2);
-        drift.position.set(10, getH(10, -10), -10);
+        const drift = SnowdriftGenerator.createConformalSnowMound(originX + 10, originZ - 10, 16, 2.8, 1.2);
+        drift.position.set(10, 0, -10);
         group.add(drift);
 
       } else if (variant === 4) {
@@ -447,8 +447,8 @@ export class ChunkManager {
       telegraph.position.set(-18, getH(-18, -10), -10);
       group.add(telegraph);
 
-      const spawnDrift = SnowdriftGenerator.createSnowMound(16, 4, 1.0);
-      spawnDrift.position.set(10, getH(10, 12), 12);
+      const spawnDrift = SnowdriftGenerator.createConformalSnowMound(originX + 10, originZ + 12, 16, 4, 1.0);
+      spawnDrift.position.set(10, 0, 12);
       group.add(spawnDrift);
     }
 

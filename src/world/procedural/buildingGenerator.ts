@@ -573,16 +573,6 @@ export class BuildingGenerator {
     roofMesh.position.y = totalHeight + roofThick / 2;
     group.add(roofMesh);
 
-    // Snowbanks around foundation
-    const frontBank = SnowdriftGenerator.createSnowMound(width * 1.02, 2.8, 1.1);
-    frontBank.position.set(0, 0, frontZ + 1.2);
-    group.add(frontBank);
-
-    const backBank = SnowdriftGenerator.createSnowMound(width * 1.02, 2.8, 1.1);
-    backBank.position.set(0, 0, backZ - 1.2);
-    backBank.rotation.y = Math.PI;
-    group.add(backBank);
-
     // ==========================================
     // 5. BUILDING INTERIOR DEFINITION FOR COLLISION SYSTEM
     // ==========================================
